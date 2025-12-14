@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+### grpc ###
+/src/main/java/com/zunf/tankbattlebackend/grpc/
+
+
+/src/main/resources/application-dev.yaml

@@ -1,22 +1,46 @@
 package com.zunf.tankbattlebackend.common;
 
+import lombok.Getter;
+
 /**
  * 自定义错误码
  *
  * @author ZunF
  */
+@Getter
 public enum ErrorCode {
 
+    // 0: success
     OK(0, "OK"),
-    PARAMS_ERROR(40000, "请求参数错误"),
-    NOT_LOGIN_ERROR(40100, "未登录"),
-    NO_AUTH_ERROR(40101, "无权限"),
-    AUTH_FAILED(40102, "认证失败"),
-    NOT_FOUND_ERROR(40400, "请求数据不存在"),
-    FORBIDDEN_ERROR(40300, "禁止访问"),
-    SYSTEM_ERROR(50000, "系统内部异常"),
-    API_REQUEST_ERROR(50010, "接口调用失败"),
-    OPERATION_ERROR(50001, "操作失败");
+
+    // 1xxx: common
+    INTERNAL_ERROR(1000, "Internal error"),
+    UNKNOWN_ERROR(1001, "Unknown error"),
+    NOT_IMPLEMENTED(1002, "Not implemented"),
+
+    // 2xxx: protocol / params
+    BAD_REQUEST(2000, "Bad request"),
+    INVALID_ARGUMENT(2001, "Invalid argument"),
+    MISSING_ARGUMENT(2002, "Missing argument"),
+    BAD_PROTOCOL_VERSION(2003, "Bad protocol version"),
+    UNSUPPORTED_COMMAND(2004, "Unsupported command"),
+    PAYLOAD_TOO_LARGE(2005, "Payload too large"),
+
+    // 3xxx: auth / permission
+    UNAUTHORIZED(3001, "Unauthorized"),
+    TOKEN_EXPIRED(3002, "Token expired"),
+    FORBIDDEN(3003, "Forbidden"),
+
+    // 4xxx: resource
+    NOT_FOUND(4001, "Not found"),
+    ALREADY_EXISTS(4002, "Already exists"),
+    CONFLICT(4003, "Conflict"),
+
+    // 5xxx: retryable / transient
+    TIMEOUT(5001, "Timeout"),
+    RATE_LIMITED(5002, "Rate limited"),
+    SERVICE_UNAVAILABLE(5003, "Service unavailable");
+
 
     /**
      * 状态码
@@ -31,14 +55,6 @@ public enum ErrorCode {
     ErrorCode(int code, String message) {
         this.code = code;
         this.message = message;
-    }
-
-    public int getCode() {
-        return code;
-    }
-
-    public String getMessage() {
-        return message;
     }
 
 }

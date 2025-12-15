@@ -28,16 +28,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public String register(String username, String password, String checkPassword, String nickname) {
         // 参数校验
         if (StrUtil.isBlank(username) || StrUtil.isBlank(password) || StrUtil.isBlank(checkPassword)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数不能为空");
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "参数不能为空");
         }
         if (username.length() < 3 || username.length() > 20) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名长度必须在3-20个字符之间");
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "用户名长度必须在3-20个字符之间");
         }
         if (password.length() < 6 || password.length() > 20) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码长度必须在6-20个字符之间");
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "密码长度必须在6-20个字符之间");
         }
         if (!password.equals(checkPassword)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次输入的密码不一致");
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "两次输入的密码不一致");
         }
 
         // 检查用户名是否已存在
@@ -45,7 +45,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .eq(User::getUsername, username);
         long count = this.count(queryWrapper);
         if (count > 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名已存在");
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "用户名已存在");
         }
 
         // 密码加密
@@ -60,7 +60,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 保存用户
         boolean saveResult = this.save(user);
         if (!saveResult) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "注册失败");
+            throw new BusinessException(ErrorCode.SERVICE_UNAVAILABLE, "注册失败");
         }
 
         // 生成JWT token
@@ -71,13 +71,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public String login(String username, String password) {
         // 参数校验
         if (StrUtil.isBlank(username) || StrUtil.isBlank(password)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数不能为空");
+            throw new BusinessException(ErrorCode.MISSING_ARGUMENT, "参数不能为空");
         }
         if (username.length() < 3 || username.length() > 20) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名长度必须在3-20个字符之间");
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "用户名长度必须在3-20个字符之间");
         }
         if (password.length() < 6 || password.length() > 20) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码长度必须在6-20个字符之间");
+            throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "密码长度必须在6-20个字符之间");
         }
 
         // 根据用户名查找用户
@@ -85,13 +85,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .eq(User::getUsername, username);
         User user = this.getOne(queryWrapper);
         if (user == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名或密码错误");
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "用户名或密码错误");
         }
 
         // 验证密码
         String encryptedPassword = DigestUtil.md5Hex(password);
         if (!encryptedPassword.equals(user.getPassword())) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名或密码错误");
+            throw new BusinessException(ErrorCode.UNAUTHORIZED, "用户名或密码错误");
         }
 
         // 生成JWT token

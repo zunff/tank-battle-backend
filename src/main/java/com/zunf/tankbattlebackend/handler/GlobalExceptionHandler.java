@@ -26,6 +26,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public BaseResp<?> runtimeExceptionHandler(RuntimeException e) {
         log.error("RuntimeException", e);
-        return BaseResp.error(ErrorCode.SYSTEM_ERROR, "系统错误");
+        return BaseResp.error(ErrorCode.SERVICE_UNAVAILABLE, "系统错误");
     }
 }

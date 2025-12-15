@@ -20,7 +20,7 @@ public class UserController {
         return BaseResp.success(userService.login(qo.getUsername(), qo.getPassword()));
     }
 
-    @PostMapping("/auth")
+    @PostMapping("/register")
     public BaseResp<String> authToken(@RequestBody RegisterQo qo) {
         return BaseResp.success(userService.register(qo.getUsername(), qo.getPassword(), qo.getCheckPassword(), qo.getNickname()));
     }

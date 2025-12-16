@@ -12,7 +12,7 @@ public class ProtoBufUtil {
         return CommonProto.BaseResponse.newBuilder().setCode(ErrorCode.OK.getCode()).setMessage(ErrorCode.OK.getMessage()).setPayloadBytes(body).build();
     }
 
-    public static CommonProto.BaseResponse failResp(ErrorCode errorCode) {
+    public static CommonProto.BaseResponse baseCodeResp(ErrorCode errorCode) {
         return CommonProto.BaseResponse.newBuilder().setCode(errorCode.getCode()).setMessage(errorCode.getMessage()).build();
     }
 }

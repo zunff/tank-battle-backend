@@ -25,14 +25,14 @@ public class AuthGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
         Long userId = JwtUtils.validateToken(token);
         CommonProto.BaseResponse response;
         if (userId == null) {
-            response = ProtoBufUtil.failResp(ErrorCode.UNAUTHORIZED);
+            response = ProtoBufUtil.baseCodeResp(ErrorCode.UNAUTHORIZED);
             responseObserver.onNext(response);
             responseObserver.onCompleted();
             return;
         }
         User user = userService.lambdaQuery().eq(User::getId, userId).one();
         if (user == null) {
-            response = ProtoBufUtil.failResp(ErrorCode.UNAUTHORIZED);
+            response = ProtoBufUtil.baseCodeResp(ErrorCode.UNAUTHORIZED);
             responseObserver.onNext(response);
             responseObserver.onCompleted();
             return;

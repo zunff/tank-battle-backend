@@ -37,7 +37,9 @@ public class AuthGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
             responseObserver.onCompleted();
             return;
         }
-        response = ProtoBufUtil.successResp(AuthProto.CheckTokenResponse.newBuilder().setPlayerId(userId).build().toByteString());
+        response = ProtoBufUtil.successResp(AuthProto.CheckTokenResponse.newBuilder()
+                .setPlayerId(userId).setPlayerAccount(user.getUsername()).setPlayerName(user.getNickname())
+                .build().toByteString());
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }

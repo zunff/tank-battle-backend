@@ -1,0 +1,18 @@
+syntax = "proto3";
+package stream;
+
+option java_package = "com.zunf.tankbattlebackend.grpc.stream";
+option java_outer_classname = "StreamProto";
+
+service PushService {
+  rpc subscribe(SubscribeRequest) returns (stream PushMessage);
+}
+
+message SubscribeRequest {
+  string tcpServerId = 1; // 固定写个 "tcpserver-1" 也行
+}
+
+message PushMessage {
+  int64 playerId = 1;
+  bytes payload = 2;
+}

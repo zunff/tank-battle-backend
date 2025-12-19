@@ -19,8 +19,10 @@ public class GameRoomManager {
     Map<Long, GameRoomBo> gameRoomMap = new ConcurrentHashMap<>();
 
     public long createGameRoom(String roomName, int maxPlayerNum, Long creatorId) {
-        long roomId = atomicInteger.getAndIncrement();
+        long roomId = atomicInteger.incrementAndGet();
         GameRoomBo gameRoomBo = new GameRoomBo(roomId, creatorId, roomName, maxPlayerNum);
+        // 创建者自动加入房间
+        gameRoomBo.getCurPlayerIds().add(creatorId);
         gameRoomMap.put(roomId, gameRoomBo);
         return roomId;
     }

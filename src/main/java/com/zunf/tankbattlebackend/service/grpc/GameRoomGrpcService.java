@@ -38,6 +38,7 @@ public class GameRoomGrpcService extends GameRoomServiceGrpc.GameRoomServiceImpl
                 .setId(gameRoomBo.getRoomId())
                 .setName(gameRoomBo.getRoomName())
                 .setMaxPlayers(gameRoomBo.getMaxPlayer())
+                .setNowPlayers(gameRoomBo.getCurPlayerIds().size())
                 .setStatus(gameRoomBo.getRoomStatus()).build()).toList();
         responseObserver.onNext(ProtoBufUtil.successResp(GameRoomProto.PageResponse.newBuilder().addAllData(roomList).setTotal(gameRoomBos.size()).build().toByteString()));
         responseObserver.onCompleted();
@@ -49,6 +50,7 @@ public class GameRoomGrpcService extends GameRoomServiceGrpc.GameRoomServiceImpl
         if (code != ErrorCode.OK.getCode()) {
             responseObserver.onNext(ProtoBufUtil.baseCodeResp(ErrorCode.of(code)));
             responseObserver.onCompleted();
+            return;
         }
         // 查询房间信息
         GameRoomBo gameRoomBo = gameRoomManager.getGameRoom(request.getRoomId());
@@ -72,6 +74,7 @@ public class GameRoomGrpcService extends GameRoomServiceGrpc.GameRoomServiceImpl
     public void leaveGameRoom(GameRoomProto.LeaveGameRoomRequest request, StreamObserver<CommonProto.BaseResponse> responseObserver) {
         int code = gameRoomManager.leaveGameRoom(request.getRoomId(), request.getPlayerId());
         responseObserver.onNext(ProtoBufUtil.baseCodeResp(ErrorCode.of(code)));
+        // todo 推送房间信息给房间内所有玩家
         responseObserver.onCompleted();
     }
 

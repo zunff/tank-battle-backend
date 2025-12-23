@@ -1,6 +1,8 @@
 package com.zunf.tankbattlebackend.service.grpc;
 
+import cn.hutool.core.util.ObjUtil;
 import com.zunf.tankbattlebackend.common.ErrorCode;
+import com.zunf.tankbattlebackend.enums.GameMsgType;
 import com.zunf.tankbattlebackend.grpc.CommonProto;
 import com.zunf.tankbattlebackend.grpc.room.GameRoomProto;
 import com.zunf.tankbattlebackend.grpc.room.GameRoomServiceGrpc;
@@ -23,6 +25,9 @@ public class GameRoomGrpcService extends GameRoomServiceGrpc.GameRoomServiceImpl
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private StreamGrpcService streamGrpcService;
 
     @Override
     public void createGameRoom(GameRoomProto.CreateGameRoomRequest request, StreamObserver<CommonProto.BaseResponse> responseObserver) {
@@ -54,7 +59,8 @@ public class GameRoomGrpcService extends GameRoomServiceGrpc.GameRoomServiceImpl
         }
         // 查询房间信息
         GameRoomBo gameRoomBo = gameRoomManager.getGameRoom(request.getRoomId());
-        List<GameRoomProto.GameRoomPlayerData> playerDataList = userService.lambdaQuery().in(User::getId, gameRoomBo.getCurPlayerIds()).list().stream().map(user -> GameRoomProto.GameRoomPlayerData.newBuilder()
+        List<User> userList = userService.lambdaQuery().in(User::getId, gameRoomBo.getCurPlayerIds()).list();
+        List<GameRoomProto.GameRoomPlayerData> playerDataList = userList.stream().map(user -> GameRoomProto.GameRoomPlayerData.newBuilder()
                 .setPlayerId(user.getId())
                 .setNickName(user.getNickname())
                 .build()).toList();
@@ -66,16 +72,34 @@ public class GameRoomGrpcService extends GameRoomServiceGrpc.GameRoomServiceImpl
                 .setCreatorId(gameRoomBo.getCreatorId())
                 .addAllPlayers(playerDataList).build();
         responseObserver.onNext(ProtoBufUtil.successResp(gameRoomDetail.toByteString()));
-        // todo 推送房间信息给房间内所有玩家
         responseObserver.onCompleted();
+
+        // 推送房间信息给房间内所有玩家
+        GameRoomProto.GameRoomPlayerData roomPlayer = playerDataList.stream().filter(user -> ObjUtil.equals(user.getPlayerId(), request.getPlayerId())).findFirst().orElseThrow();
+        List<Long> curPlayerIds = gameRoomBo.getCurPlayerIds();
+        for (Long playerId : curPlayerIds) {
+            streamGrpcService.pushToPlayer(playerId, GameMsgType.PLAYER_JOIN_ROOM, roomPlayer.toByteArray());
+        }
     }
 
     @Override
     public void leaveGameRoom(GameRoomProto.LeaveGameRoomRequest request, StreamObserver<CommonProto.BaseResponse> responseObserver) {
+        User user = userService.getById(request.getPlayerId());
+        if (ObjUtil.isNull(user)) {
+            responseObserver.onNext(ProtoBufUtil.baseCodeResp(ErrorCode.INVALID_ARGUMENT));
+            responseObserver.onCompleted();
+            return;
+        }
         int code = gameRoomManager.leaveGameRoom(request.getRoomId(), request.getPlayerId());
         responseObserver.onNext(ProtoBufUtil.baseCodeResp(ErrorCode.of(code)));
-        // todo 推送房间信息给房间内所有玩家
         responseObserver.onCompleted();
+        // 推送房间信息给房间内所有玩家
+        GameRoomBo gameRoomBo = gameRoomManager.getGameRoom(request.getRoomId());
+        List<Long> curPlayerIds = gameRoomBo.getCurPlayerIds();
+        for (Long playerId : curPlayerIds) {
+            GameRoomProto.GameRoomPlayerData roomPlayer = GameRoomProto.GameRoomPlayerData.newBuilder().setPlayerId(user.getId()).setNickName(user.getNickname()).build();
+            streamGrpcService.pushToPlayer(playerId, GameMsgType.PLAYER_LEAVE_ROOM, roomPlayer.toByteArray());
+        }
     }
 
     @Override

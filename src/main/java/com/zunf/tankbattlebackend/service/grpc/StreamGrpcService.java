@@ -1,6 +1,7 @@
 package com.zunf.tankbattlebackend.service.grpc;
 
 import com.google.protobuf.ByteString;
+import com.zunf.tankbattlebackend.enums.GameMsgType;
 import com.zunf.tankbattlebackend.grpc.stream.PushServiceGrpc;
 import com.zunf.tankbattlebackend.grpc.stream.StreamProto;
 import io.grpc.stub.ServerCallStreamObserver;
@@ -48,7 +49,7 @@ public class StreamGrpcService extends PushServiceGrpc.PushServiceImplBase {
     /**
      * 业务侧调用：推送给某个 playerId
      */
-    public boolean pushToPlayer(long playerId, byte[] payload) {
+    public boolean pushToPlayer(long playerId, GameMsgType msgType, byte[] payload) {
         ServerCallStreamObserver<StreamProto.PushMessage> obs = subscriber.get();
         if (obs == null) return false;          // tcpserver 未订阅/已断开
         if (obs.isCancelled()) {                // 已取消则清理
@@ -58,6 +59,7 @@ public class StreamGrpcService extends PushServiceGrpc.PushServiceImplBase {
 
         StreamProto.PushMessage msg = StreamProto.PushMessage.newBuilder()
                 .setPlayerId(playerId)
+                .setMsgType(msgType.getCode())
                 .setPayload(ByteString.copyFrom(payload))
                 .build();
 

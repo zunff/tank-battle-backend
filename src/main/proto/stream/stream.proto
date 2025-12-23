@@ -14,5 +14,6 @@ message SubscribeRequest {
 
 message PushMessage {
   int64 playerId = 1;
-  bytes payload = 2;
+  int32 msgType = 2;
+  bytes payload = 10;
 }

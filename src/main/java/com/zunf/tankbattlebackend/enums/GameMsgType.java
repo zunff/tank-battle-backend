@@ -9,12 +9,12 @@ import java.util.Arrays;
 @AllArgsConstructor
 public enum GameMsgType {
     // server -> client
-    PLAYER_JOIN_ROOM(1002),
-    PLAYER_LEAVE_ROOM(1003),
+    PLAYER_JOIN_ROOM(10002),
+    PLAYER_LEAVE_ROOM(10003),
 
     // common
     ERROR(0),
-    UNKNOWN(2048);
+    UNKNOWN(20001);
 
     private final int code;
 

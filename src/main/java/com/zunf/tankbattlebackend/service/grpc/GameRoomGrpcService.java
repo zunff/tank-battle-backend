@@ -90,13 +90,16 @@ public class GameRoomGrpcService extends GameRoomServiceGrpc.GameRoomServiceImpl
             responseObserver.onCompleted();
             return;
         }
+        GameRoomBo gameRoomBo = gameRoomManager.getGameRoom(request.getRoomId());
         int code = gameRoomManager.leaveGameRoom(request.getRoomId(), request.getPlayerId());
         responseObserver.onNext(ProtoBufUtil.baseCodeResp(ErrorCode.of(code)));
         responseObserver.onCompleted();
         // 推送房间信息给房间内所有玩家
-        GameRoomBo gameRoomBo = gameRoomManager.getGameRoom(request.getRoomId());
         List<Long> curPlayerIds = gameRoomBo.getCurPlayerIds();
         for (Long playerId : curPlayerIds) {
+            if (ObjUtil.equals(playerId, request.getPlayerId())) {
+                continue;
+            }
             GameRoomProto.GameRoomPlayerData roomPlayer = GameRoomProto.GameRoomPlayerData.newBuilder().setPlayerId(user.getId()).setNickName(user.getNickname()).build();
             streamGrpcService.pushToPlayer(playerId, GameMsgType.PLAYER_LEAVE_ROOM, roomPlayer.toByteArray());
         }

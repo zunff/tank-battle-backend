@@ -41,14 +41,6 @@ public enum ErrorCode {
     TIMEOUT(5001, "Timeout"),
     RATE_LIMITED(5002, "Rate limited"),
     SERVICE_UNAVAILABLE(5003, "Service unavailable"),
-
-    // 6xxx: business error
-    GAME_ROOM_NOT_FOUND(6001, "Room not found"),
-    GAME_ROOM_FULL(6002, "Room full"),
-    GAME_ROOM_PLAYER_EXIST(6003, "Player exist"),
-    GAME_ROOM_PLAYER_NOT_EXIST(6004, "Player not exist"),
-    GAME_ROOM_NOT_CREATOR(6005, "Not creator"),
-    GAME_ROOM_ALREADY_START(6006, "Already start"),
     ;
 
     /**

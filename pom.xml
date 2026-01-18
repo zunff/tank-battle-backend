@@ -130,7 +130,7 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>com.zunf.tankbattlebackend.TankBattleBackendApplication</mainClass>
-                    <skip>true</skip>
+                    <skip>false</skip>
                 </configuration>
                 <executions>
                     <execution>

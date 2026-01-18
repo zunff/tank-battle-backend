@@ -1,5 +1,6 @@
 package com.zunf.tankbattlebackend.service.grpc;
 
+import com.zunf.tankbattlebackend.StressTestUserManager;
 import com.zunf.tankbattlebackend.common.ErrorCode;
 import com.zunf.tankbattlebackend.grpc.CommonProto;
 import com.zunf.tankbattlebackend.grpc.auth.AuthProto;
@@ -19,6 +20,9 @@ public class AuthGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
     @Resource
     private UserServiceImpl userService;
 
+    @Resource
+    private StressTestUserManager stressTestUserManager;
+
     @Override
     public void checkToken(AuthProto.CheckTokenRequest request, StreamObserver<CommonProto.BaseResponse> responseObserver) {
         String token = request.getToken();
@@ -26,6 +30,16 @@ public class AuthGrpcService extends AuthServiceGrpc.AuthServiceImplBase {
         CommonProto.BaseResponse response;
         if (userId == null) {
             response = ProtoBufUtil.baseCodeResp(ErrorCode.UNAUTHORIZED);
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+            return;
+        }
+        // 压力测试用户
+        if (stressTestUserManager.isStressTestUser(userId)) {
+            String stressUserName = stressTestUserManager.getUserName(userId);
+            response = ProtoBufUtil.successResp(AuthProto.CheckTokenResponse.newBuilder()
+                    .setPlayerId(userId).setPlayerAccount(stressUserName).setPlayerName(stressUserName)
+                    .build().toByteString());
             responseObserver.onNext(response);
             responseObserver.onCompleted();
             return;

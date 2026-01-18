@@ -5,8 +5,10 @@ import cn.hutool.crypto.digest.DigestUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.zunf.tankbattlebackend.StressTestUserManager;
 import com.zunf.tankbattlebackend.common.BusinessException;
 import com.zunf.tankbattlebackend.common.ErrorCode;
+import com.zunf.tankbattlebackend.constants.StressTestConstant;
 import com.zunf.tankbattlebackend.model.entity.User;
 import com.zunf.tankbattlebackend.service.UserService;
 import com.zunf.tankbattlebackend.mapper.UserMapper;
@@ -14,6 +16,7 @@ import com.zunf.tankbattlebackend.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.Date;
 
 /**
@@ -23,6 +26,10 @@ import java.util.Date;
 */
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService{
+
+
+    @Resource
+    private StressTestUserManager stressTestUserManager;
 
     @Override
     public String register(String username, String password, String checkPassword, String nickname) {
@@ -79,6 +86,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (password.length() < 6 || password.length() > 20) {
             throw new BusinessException(ErrorCode.INVALID_ARGUMENT, "密码长度必须在6-20个字符之间");
         }
+        if (StrUtil.equals(username, StressTestConstant.USER_NAME_PASSWORD) && StrUtil.equals(password, StressTestConstant.USER_NAME_PASSWORD)) {
+            return stressTestUserManager.createStressTestToken();
+        }
 
         // 根据用户名查找用户
         LambdaQueryWrapper<User> queryWrapper = Wrappers.lambdaQuery(User.class)
@@ -97,6 +107,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 生成JWT token
         return JwtUtils.generateToken(user.getId());
     }
+
 }
 
 

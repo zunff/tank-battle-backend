@@ -1,6 +1,7 @@
 package com.zunf.tankbattlebackend.service.grpc;
 
 import cn.hutool.core.collection.CollUtil;
+import com.zunf.tankbattlebackend.StressTestUserManager;
 import com.zunf.tankbattlebackend.common.ErrorCode;
 import com.zunf.tankbattlebackend.grpc.CommonProto;
 import com.zunf.tankbattlebackend.grpc.user.UserProto;
@@ -20,12 +21,24 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
     @Resource
     private UserService userService;
 
+    @Resource
+    private StressTestUserManager stressTestUserManager;
+
     @Override
     public void getUser(UserProto.GetUserRequest request, StreamObserver<CommonProto.BaseResponse> responseObserver) {
         long playerId = request.getPlayerId();
         if (playerId <= 0) {
             responseObserver.onNext(ProtoBufUtil.baseCodeResp(ErrorCode.INVALID_ARGUMENT));
             responseObserver.onCompleted();
+        }
+        if (stressTestUserManager.isStressTestUser(playerId)) {
+            String userName = stressTestUserManager.getUserName(playerId);
+            UserProto.GetUserResponse resp = UserProto.GetUserResponse.newBuilder()
+                    .setUser(UserProto.UserInfo.newBuilder().setPlayerId(playerId).setNickname(userName).build())
+                    .build();
+            responseObserver.onNext(ProtoBufUtil.successResp(resp.toByteString()));
+            responseObserver.onCompleted();
+            return;
         }
         User user = userService.getById(playerId);
         if (user == null) {
